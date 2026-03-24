@@ -2,9 +2,81 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Игра: Угадай момент события</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        video { width: 800px; background: black; }
+        button { margin: 10px 0; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        #result, #leaderboard { margin-top: 20px; border: 1px solid #ccc; padding: 10px; }
+        #leaderboard table { border-collapse: collapse; width: 100%; }
+        #leaderboard th, #leaderboard td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
 </head>
 <body>
+    <h1>Угадай момент события (гол, удар и т.п.)</h1>
+    <video id="video" controls>
+        <source src="/static/{{ video_file }}" type="video/mp4">
+        Ваш браузер не поддерживает видео.
+    </video>
+    <br>
+    <button onclick="makePrediction()">Угадать событие!</button>
 
+    <div id="result"></div>
+
+    <h2>Турнирная таблица</h2>
+    <div id="leaderboard">
+        <table id="leaderboard-table">
+            <thead>
+                <tr><th>Пользователь</th><th>Очки</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+
+        async function makePrediction() {
+            const currentTime = video.currentTime;
+            const user = prompt("Введите ваше имя (для турнирной таблицы):", "TestUser") || "TestUser";
+
+            const response = await fetch('/api/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user: user, video_id: 'video1', time: currentTime })
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                document.getElementById('result').innerHTML = `
+                    <strong>Результат:</strong><br>
+                    Ваше время: ${currentTime.toFixed(2)} сек<br>
+                    Реальное событие: ${data.event_type} в ${data.actual_time.toFixed(2)} сек<br>
+                    Исходные очки: ${data.raw_score.toFixed(2)}<br>
+                    Скорректированные очки (ScoringAI): ${data.final_score.toFixed(2)}
+                `;
+            } else {
+                document.getElementById('result').innerHTML = `<strong>Ошибка:</strong> ${data.error}`;
+            }
+
+            // Обновить турнирную таблицу
+            updateLeaderboard();
+        }
+
+        async function updateLeaderboard() {
+            const response = await fetch('/api/leaderboard');
+            const data = await response.json();
+            const tbody = document.querySelector('#leaderboard-table tbody');
+            tbody.innerHTML = '';
+            data.forEach(entry => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = entry.name;
+                row.insertCell(1).textContent = entry.total_score.toFixed(2);
+            });
+        }
+
+        // Обновляем таблицу при загрузке
+        updateLeaderboard();
+    </script>
 </body>
 </html>
