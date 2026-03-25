@@ -1,0 +1,7 @@
+{
+  "events": [
+    {"video_id": "video1", "timestamp": 10.5, "event_type": "goal"},
+    {"video_id": "video1", "timestamp": 45.2, "event_type": "shot"},
+    {"video_id": "video1", "timestamp": 78.0, "event_type": "goal"}
+  ]
+}
