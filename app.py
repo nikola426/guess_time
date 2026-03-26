@@ -18,7 +18,7 @@ with app.app_context():
         db.session.commit()
 
 # Функция вычисления исходных очков на основе временной разницы
-def compute_raw_score(predicted_time, actual_time, tolerance=5.0):
+def compute_raw_score(predicted_time, actual_time, tolerance=2.0):
     """
     Чем ближе предсказание к реальному времени, тем больше очков.
     Максимум 100 очков при разнице 0, падает линейно до 0 при разнице >= tolerance.
