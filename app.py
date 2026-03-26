@@ -1,8 +1,6 @@
-import os
 from flask import Flask, render_template, request, jsonify
 from models import db, User, Event, Prediction
 from ai_utils import event_detector, scoring_ai
-import numpy as np
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///game.db'
@@ -18,7 +16,7 @@ with app.app_context():
         db.session.commit()
 
 # Функция вычисления исходных очков на основе временной разницы
-def compute_raw_score(predicted_time, actual_time, tolerance=5.0):
+def compute_raw_score(predicted_time, actual_time, tolerance=2.0):
     """
     Чем ближе предсказание к реальному времени, тем больше очков.
     Максимум 100 очков при разнице 0, падает линейно до 0 при разнице >= tolerance.
